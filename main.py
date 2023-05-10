@@ -1,6 +1,7 @@
 import os
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
 from matplotlib import path as mpl_path
 
 def get_hexagons(image):
@@ -59,11 +60,9 @@ def sort_key(filename):
     digits = [part for part in parts[0] if part.isnumeric()]
     return int(''.join(digits)) if digits else float('inf')
 
-
 if __name__ == "__main__":
 
     path = "Photo/"
-
 
     extensions = {"jpg", "jpeg", "png"}
     files = os.listdir(path)
@@ -74,7 +73,6 @@ if __name__ == "__main__":
     for file in files:
         if file.split(".")[-1].lower() in extensions:
             image = cv2.imread(os.path.join(path, file))
-
             hexagons = get_hexagons(image)
             hexagons_list.append(hexagons)
 
@@ -90,12 +88,18 @@ if __name__ == "__main__":
         elif abs(volume - total_volume / valid_images) <= 300 * total_volume / valid_images:
             total_volume += volume
             valid_images += 1
+
         print(f"Объем кучи на изображении '{files[i]}': {volume:.5f} куб.м")
+
+        for hexagon in hexagons:
+            cv2.polylines(image, [hexagon.astype(int)], True, (255, 0, 0), 2)
+
+        # Отображение изображения с шестиугольниками
+        plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+        plt.show()
 
     if valid_images > 0:
         avg_volume = total_volume / valid_images
         print(f"Средний объем кучи горной породы на {valid_images} изображениях: {avg_volume:.5f} куб.м")
     else:
         print("Не удалось обработать ни одно изображение с допустимым объёмом горной породы")
-
-
