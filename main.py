@@ -3,7 +3,6 @@ import cv2
 import numpy as np
 from matplotlib import path as mpl_path
 
-
 def get_hexagons(image):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
@@ -47,7 +46,6 @@ def calculate_volume(hexagons, step=10):
         mask = path.contains_points(np.vstack([X.ravel(), Y.ravel()]).T).reshape(X.shape)
         Z[mask] = 1
 
-    # Рассчитываем объем
     voxel_volume = (step / 100) ** 3  # объем одного вокселя в м3
     total_volume = np.sum(Z) * voxel_volume
     return total_volume
@@ -56,36 +54,31 @@ def calculate_volume(hexagons, step=10):
 def sort_key(filename):
     parts = filename.split(".")
     if parts[-1].lower() not in extensions:
-        return float('inf')  # Use infinity as an 'unknown' extension
+        return float('inf')
     digits = [part for part in parts[0] if part.isnumeric()]
     return int(''.join(digits)) if digits else float('inf')
 
 
 if __name__ == "__main__":
-    # Путь к папке с изображениями
-    path = "photo/"
 
-    # Получаем список файлов в папке
+    path = "Photold/"
+
+
     extensions = {"jpg", "jpeg", "png"}
     files = os.listdir(path)
-    files.sort(key=sort_key)  # использование функции sort_key в качестве ключа для сортировки списка файлов
+    files.sort(key=sort_key)
 
     # Обрабатываем каждый файл
     hexagons_list = []
     for file in files:
-        # Проверяем, что файл имеет расширение JPG или PNG
         if file.split(".")[-1].lower() in extensions:
-            # Загружаем изображение
             image = cv2.imread(os.path.join(path, file))
 
-            # Обрабатываем изображение
             hexagons = get_hexagons(image)
             hexagons_list.append(hexagons)
 
-    # Рассчитываем общий объем кучи горной породы
     num_images = len(hexagons_list)
 
-    # суммируем объемы гексагонов для всех элементов в hexagons_list
     total_volume = 0
     valid_images = 0
     for i, hexagons in enumerate(hexagons_list):
@@ -93,14 +86,14 @@ if __name__ == "__main__":
         if valid_images == 0:
             total_volume += volume
             valid_images += 1
-        elif abs(volume - total_volume / valid_images) <= 0.3 * total_volume / valid_images:
+        elif abs(volume - total_volume / valid_images) <= 300 * total_volume / valid_images:
             total_volume += volume
             valid_images += 1
-        print(f"Объем кучи на изображении '{files[i]}': {volume:.2f} куб.см")
+        print(f"Объем кучи на изображении '{files[i]}': {volume*1000000:.5f} куб.см")
 
     if valid_images > 0:
         avg_volume = total_volume / valid_images
-        print(f"Средний объем кучи горной породы на {valid_images} изображениях: {avg_volume:.2f} куб.см")
+        print(f"Средний объем кучи горной породы на {valid_images} изображениях: {avg_volume*1000000:.5f} куб.см")
     else:
         print("Не удалось обработать ни одно изображение с допустимым объёмом горной породы")
 
