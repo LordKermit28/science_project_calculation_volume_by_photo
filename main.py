@@ -27,6 +27,7 @@ def get_hexagons(image):
 
 
 def calculate_volume(hexagons, step=10):
+
     # Получаем координаты точек на изображении
     points = np.concatenate(hexagons)
 
@@ -61,7 +62,7 @@ def sort_key(filename):
 
 if __name__ == "__main__":
 
-    path = "Photold/"
+    path = "Photo/"
 
 
     extensions = {"jpg", "jpeg", "png"}
@@ -89,11 +90,11 @@ if __name__ == "__main__":
         elif abs(volume - total_volume / valid_images) <= 300 * total_volume / valid_images:
             total_volume += volume
             valid_images += 1
-        print(f"Объем кучи на изображении '{files[i]}': {volume*1000000:.5f} куб.см")
+        print(f"Объем кучи на изображении '{files[i]}': {volume:.5f} куб.м")
 
     if valid_images > 0:
         avg_volume = total_volume / valid_images
-        print(f"Средний объем кучи горной породы на {valid_images} изображениях: {avg_volume*1000000:.5f} куб.см")
+        print(f"Средний объем кучи горной породы на {valid_images} изображениях: {avg_volume:.5f} куб.м")
     else:
         print("Не удалось обработать ни одно изображение с допустимым объёмом горной породы")
 
