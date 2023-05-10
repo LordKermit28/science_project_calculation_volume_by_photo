@@ -7,9 +7,9 @@ from matplotlib import path as mpl_path
 def get_hexagons(image):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-    # Уменьшаем размер изображения для более быстрой обработки
     scaled_size = (gray.shape[1] // 2, gray.shape[0] // 2)
-    scaled = cv2.resize(gray, scaled_size, interpolation=cv2.INTER_LINEAR)
+    scaled = cv2.resize(gray, scaled_size, interpolation=cv2.INTER_LINEAR) * 2.8346
+    scaled = scaled.astype(np.uint8)
 
     # Бинаризуем изображение
     _, binary = cv2.threshold(scaled, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
@@ -17,6 +17,21 @@ def get_hexagons(image):
     # Ищем контуры на бинаризованном изображении
     contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
+    # Применяем алгоритм Watershed для обработки изображения
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+    closed = cv2.morphologyEx(gray, cv2.MORPH_CLOSE, kernel)
+    gradient = cv2.morphologyEx(closed, cv2.MORPH_GRADIENT, kernel)
+    thresh = cv2.adaptiveThreshold(gradient, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+    opened = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=2)
+    unknown = cv2.subtract(closed, opened)
+    ret, markers = cv2.connectedComponents(opened)
+    markers += 1
+    markers[unknown==255] = 0
+    markers = cv2.watershed(image, markers)
+    image[markers == -1] = [255, 0, 0]
+
+    # Ищем шестиугольники
     hexagons = []
     for cnt in contours:
         approx = cv2.approxPolyDP(cnt, cv2.arcLength(cnt, True) * 0.05, True)
