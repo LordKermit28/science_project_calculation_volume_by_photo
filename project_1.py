@@ -67,7 +67,6 @@ def calculate_volume(hexagons, step=10):
     total_volume = np.sum(Z) * voxel_volume
     return total_volume
 
-
 def sort_key(filename):
     parts = filename.split(".")
     if parts[-1].lower() not in extensions:
